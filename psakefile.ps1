@@ -1,17 +1,20 @@
-task default -depends A, B, C
+task default -Depends list
 
-task Hello {
-    "Hello, World!"
+task list {
+    Get-PSakeScriptTasks
 }
 
-task A {
-    "TaskA"
+task clean {
+    Remove-Item -Recurse -Force bin
 }
 
-task B -precondition { return $false } {
-    "TaskB"
-}
-
-task C -precondition { return $true } {
-    "TaskC"
+task build {
+    $out = "./bin/go-min-win-service.exe"
+    $env:GOOS = "windows"
+    $env:GOARCH = "amd64"
+    $env:CGO_ENABLED = "0"
+    go build -ldflags "-s -w" -o $out .
+    $size = (Get-Item $out).Length
+    $sizeInMB = [math]::Round($size / 1MB, 2)
+    Write-Output "Size of built exe file: $sizeInMB MB ($size bytes)"
 }
